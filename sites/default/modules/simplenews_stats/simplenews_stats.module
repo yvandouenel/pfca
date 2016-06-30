@@ -1,0 +1,345 @@
+<?php
+/**
+ * Implements hook_menu()
+ */
+function simplenews_stats_menu(){
+    
+    // Permet de compte les clics sur un lien de la newsletter
+    $items['emailing/link/%/%'] = array(
+        'title' => 'Simplenews - Link statistics',
+        'page callback' => 'simplenews_stats_link',
+        'page arguments' => array(2, 3),
+        'access callback' => TRUE,
+    );
+    
+    // Affiche un pixel transparent pour compter le nombre d'ouverture
+    $items['emailing/open/%/%'] = array(
+        'title' => 'Simplenews - Open statistics',
+        'page callback' => 'simplenews_stats_open',
+        'page arguments' => array(2, 3),
+        'access callback' => TRUE,
+    );
+    
+    // Onglet qui affiche les stats sur la newsletter
+    $items['node/%node/simplenews_stats'] = array(
+        'title' => 'Newsletter Statistics',
+        'type' => MENU_LOCAL_TASK,
+        'access callback' => 'simplenews_stats_node_tab_access',
+        'access arguments' => array(1),
+        'page callback' => 'simplenews_stats_node_tab_charts',
+        'page arguments' => array(1),
+        'context' => MENU_LOCAL_TASK,
+        'file' => 'simplenews_stats.admin.inc',
+        'weight' => 2,
+    );
+    
+    // Charts
+    $items['node/%node/simplenews_stats/charts'] = array(
+        'title' => 'Charts',
+        'type' => MENU_DEFAULT_LOCAL_TASK,
+        'access callback' => 'simplenews_stats_node_tab_access',
+        'access arguments' => array(1),
+        'page callback' => 'simplenews_stats_node_tab_charts',
+        'page arguments' => array(1),
+        'file' => 'simplenews_stats.admin.inc',
+    );
+    
+    // Links details
+    $items['node/%node/simplenews_stats/links'] = array(
+        'title' => 'Links',
+        'type' => MENU_LOCAL_TASK,
+        'access callback' => 'simplenews_stats_node_tab_access',
+        'access arguments' => array(1),
+        'page callback' => 'simplenews_stats_node_tab_links',
+        'page arguments' => array(1),
+        'file' => 'simplenews_stats.admin.inc',
+    );
+    
+    // Users details
+    $items['node/%node/simplenews_stats/users'] = array(
+        'title' => 'Subscribers',
+        'type' => MENU_LOCAL_TASK,
+        'access callback' => 'simplenews_stats_node_tab_access',
+        'access arguments' => array(1),
+        'page callback' => 'simplenews_stats_node_tab_emails',
+        'page arguments' => array(1),
+        'file' => 'simplenews_stats.admin.inc',
+    );
+    
+    return $items;
+    
+}
+
+/**
+ * Permet d'afficher le theme d'admin sur l'onglet "Newsletter Statistics"
+ */
+function simplenews_stats_admin_paths(){
+    return array(
+        'node/*/simplenews_stats*' => TRUE,
+    );
+}
+
+/**
+ * Access callback; Acces to Newsletter Stats tab page.
+ */
+function simplenews_stats_node_tab_access($node) {
+    return simplenews_check_node_types($node->type) && user_access('send newsletter');
+}
+
+/**
+ * Implements hook_mail_alter()
+ * Permet de :
+ *  - Réécrire les liens
+ *  - Ajouter le pixel de statistiques
+ */
+function simplenews_mail_alter(&$message){
+    if($message['id'] == 'simplenews_node'){
+        $source = $message['params']['simplenews_source'];
+        $node = $source->getNode();
+        $subject = $message['subject'];
+        $recipient = $message['to'];
+        $body = $message['body']['body'];
+        
+        $recipient_id = simplestats_get_email_id($recipient);
+        $node_id = simplestats_get_node_id($node->nid);
+        
+        // Ajout du pixel de stat
+        $message['body']['pixel'] = '<img src="'.url('emailing/open/' . $recipient_id . '/' . $node_id, array('absolute' => TRUE)).'" width="1" height="1" />';
+        
+        // Réécriture des liens
+        preg_match_all('|<a\s[^>]*(href=(\"??)([^\" >]*?)\\2)[^>]*>(.*)<\/a>|siU', $body, $matches, PREG_SET_ORDER);
+        foreach($matches as $index => $row){
+			if(!preg_match('|^#|', $row[3])){
+				$link_id = simplestats_get_link_id($row[3], $node->nid);
+				$link = str_replace($row[1], 'href="'.url('emailing/link/' . $recipient_id . '/' . $link_id, array('absolute' => TRUE)).'"', $row[0]);
+				$body = str_replace($row[0], $link, $body);
+			}
+        }
+        $message['body']['body'] = $body;
+    }
+}
+
+/**
+ * Permet de générer ou récupérer l'identifiant unique associé à l'email
+ */
+function simplestats_get_email_id($email){
+    $row = db_select('simplenews_stats_emails', 'sse')
+        ->fields('sse')
+        ->condition('email', $email)
+        ->execute()
+        ->fetchAssoc();
+    if($row){
+        return $row['id'];
+    }else{
+        db_insert('simplenews_stats_emails')
+            ->fields(array(
+                'email' => $email,
+                'id' => uniqid()
+            ))
+            ->execute();
+        return simplestats_get_email_id($email);
+    }
+}
+
+/**
+ * Permet de générer ou récupérer l'identifiant unique associé à la newsletter
+ */
+function simplestats_get_node_id($nid){
+    $row = db_select('simplenews_stats_nodes', 'ssn')
+        ->fields('ssn')
+        ->condition('nid', $nid)
+        ->execute()
+        ->fetchAssoc();
+    if($row){
+        return $row['id'];
+    }else{
+        db_insert('simplenews_stats_nodes')
+            ->fields(array(
+                'nid' => $nid,
+                'id' => uniqid()
+            ))
+            ->execute();
+        return simplestats_get_node_id($nid);
+    }
+}
+
+/**
+ *
+ */
+function simplestats_get_link_id($url, $nid){
+    $row = db_select('simplenews_stats_links', 'sl')
+        ->fields('sl')
+        ->condition('nid', $nid)
+        ->condition('url', $url)
+        ->execute()
+        ->fetchAssoc();
+    if($row){
+        return $row['id'];
+    }else{
+        db_insert('simplenews_stats_links')
+            ->fields(array(
+                'url' => $url,
+                'nid' => $nid,
+                'id' => uniqid()
+            ))
+            ->execute();
+        return simplestats_get_link_id($url, $nid);
+    }
+}
+
+/**
+ * Retourne l'email en fonction de son identifiant unique
+ */
+function simplestats_get_recipient($id){
+    return db_select('simplenews_stats_emails', 'sse')
+        ->fields('sse')
+        ->condition('id', $id)
+        ->execute()
+        ->fetchAssoc();
+}
+
+/**
+ * Retourne les infos sur le lien à partir de son indentifiant unique
+ */
+function simplestats_get_link($id){
+    return db_select('simplenews_stats_links', 'sl')
+        ->fields('sl')
+        ->condition('id', $id)
+        ->execute()
+        ->fetchAssoc();
+}
+
+/**
+ * Retourne le nid en fonction de l'id unique
+ */
+function simplestats_get_node($id){
+    return db_select('simplenews_stats_nodes', 'ssn')
+        ->fields('ssn')
+        ->condition('id', $id)
+        ->execute()
+        ->fetchAssoc();
+}
+
+/**
+ * Page permettant de comptabiliser une stat de lien
+ */
+function simplenews_stats_link($to_id, $link_id){
+    
+    $recipient = simplestats_get_recipient($to_id);
+    $link = simplestats_get_link($link_id);
+    
+    $row = db_select('simplenews_stats_open_link', 'ssol')
+        ->fields('ssol')
+        ->condition('nid', $link['nid'])
+        ->condition('link_id', $link_id)
+        ->condition('email', $recipient['email'])
+        ->execute()
+        ->fetchAssoc();
+        
+    if($row){
+        db_update('simplenews_stats_open_link')
+            ->condition('nid', $link['nid'])
+            ->condition('link_id', $link_id)
+            ->condition('email', $recipient['email'])
+            ->fields(array(
+                'count' => $row['count'] + 1,
+            ))
+            ->execute();
+    }else{
+        db_insert('simplenews_stats_open_link')
+            ->fields(array(
+                'nid' => $link['nid'],
+                'link_id' => $link_id,
+                'url' => $link['url'],
+                'email' => $recipient['email'],
+                'count' => 1,
+            ))
+            ->execute();
+    }
+    
+    global $base_path;
+    
+    if(!preg_match('|^http|i', $link['url'])){
+        $url = preg_replace('|^'.$base_path.'|', '', $link['url']);
+        $url = url($url, array('absolute' => TRUE));
+    }else{
+        $url = $link['url'];
+    }
+    
+    // Redirection
+    header('Location: ' . $url);
+    exit;
+}
+
+/**
+ * Page permettant de comptabiliser une stat d'ouverture
+ */
+function simplenews_stats_open($to_id, $nl_id){
+    
+    $recipient = simplestats_get_recipient($to_id);
+    $node = simplestats_get_node($nl_id);
+    
+    // Count général
+    $row = db_select('simplenews_stats_open', 'sso')
+        ->fields('sso')
+        ->condition('nid', $node['nid'])
+        ->condition('email', $recipient['email'])
+        ->execute()
+        ->fetchAssoc();
+        
+    if($row){
+        db_update('simplenews_stats_open')
+            ->condition('nid', $node['nid'])
+            ->condition('email', $recipient['email'])
+            ->fields(array(
+                'count' => $row['count'] + 1,
+            ))
+            ->execute();
+    }else{
+        db_insert('simplenews_stats_open')
+            ->fields(array(
+                'nid' => $node['nid'],
+                'email' => $recipient['email'],
+                'count' => 1,
+            ))
+            ->execute();
+    }
+    
+    // GIF Transparent 1x1 pixels
+    header('Content-Type: image/gif');
+    print base64_decode('R0lGODlhAQABAJAAAP8AAAAAACH5BAUQAAAALAAAAAABAAEAAAICBAEAOw==');
+}
+
+/**
+ * Implements hook_node_view()
+ * Permet de compter le nombre de vues d'une newsletter sur le site
+ */
+function simplenews_stats_node_view($node, $view_mode, $langcode){
+    if(simplenews_check_node_types($node->type)){
+        if($view_mode == 'full'){
+            
+            $row = db_select('simplenews_stats_view', 'ssv')
+                ->fields('ssv')
+                ->condition('nid', $node->nid)
+                ->execute()
+                ->fetchAssoc();
+                
+            if($row){
+                db_update('simplenews_stats_view')
+                    ->condition('nid', $node->nid)
+                    ->fields(array(
+                        'count' => $row['count'] + 1,
+                    ))
+                    ->execute();
+            }else{
+                db_insert('simplenews_stats_view')
+                    ->fields(array(
+                        'nid' => $node->nid,
+                        'count' => 1,
+                    ))
+                    ->execute();
+            }
+            
+        }
+    }
+}

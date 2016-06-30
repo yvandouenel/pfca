@@ -1,0 +1,33 @@
+
+name = PFCA34
+description = Template PFCA34.
+package = Core
+version = VERSION
+core = 7.x
+
+stylesheets[all][]   = css/style.css
+stylesheets[all][]   = css/din.css
+stylesheets[all][]   = css/checkbox_radio.css
+stylesheets[all][]   = css/responsive.css
+stylesheets[print][] = css/print.css
+
+scripts[] = js/jquery.bxslider.min.js
+scripts[] = js/jquery.carouFredSel-6.2.0-packed.js
+scripts[] = js/icheck.js
+scripts[] = js/scripts.js
+
+regions[header]         = Header
+regions[sidebar_first]  = Colonne Gauche
+regions[menu]           = Menu
+regions[slider]         = Slider
+regions[content]        = Content
+regions[footer_bot]     = Footer
+
+settings[shortcut_module_link] = 0
+
+
+; Information added by Drupal.org packaging script on 2014-01-15
+version = "7.26"
+project = "drupal"
+datestamp = "1389815930"
+

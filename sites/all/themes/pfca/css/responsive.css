@@ -1,0 +1,194 @@
+	.bouton-expand{display: none;}
+	#btn-menu{display: none;}
+	
+@media screen and (max-width: 767px) {
+	/*Reinitialisation*/
+	body{min-width: 0;}
+	body, #page-wrapper, #page, #footer-wrapper{overflow: visible; max-width: 100%;}
+	#page-wrapper { margin: 0 3%; width: 94%;}
+	/*GENERAL*/
+	a#logo {  background: url("../images/logo_PFCA34.png") no-repeat scroll left top / 65% auto rgba(0, 0, 0, 0); display: block; float: left; height: 59px; width: 240px;}
+	#header{background: none;}
+	#main-wrapper #main #content.column .section #focus .item-list ul li{margin-bottom: 30px;}
+	#focus-more{height: auto;}
+	#main-wrapper #bloc-sliders{width: 94% ; padding: 0 3%;}
+	#pages_visites{width: 93%; margin-left: -3%;}
+	#main-wrapper #bloc-sliders #actualite,
+	#main-wrapper #bloc-sliders #agenda{width: 100%;  margin:	20px 0;}
+	#pages_visites { margin-left: -3%; margin-right: 0; max-height: none; min-height: 0; padding: 3%; width: 101%;}
+	.view-page-atterrissage .bx-controls a.bx-prev, .view-page-atterrissage .bx-controls a.bx-next{top:19px;}
+	#footer-wrapper .section #footer-columns #block-block-3{margin: 20px 0;}
+	#footer-wrapper .section #footer { float: left;margin-left: -3%;padding-left: 3%;text-align: center;width: 103%;}
+	#actualite .bx-wrapper,
+	#agenda .bx-wrapper{max-width: 100% !important;}
+	ul.menu-section{padding: 26px 0 15px;}
+	.bloc-cadre, .bloc-cadre2, .bloc-cadre3{width: 87%;}
+	#telechargement,
+	.onglet-content{width: 97%;}
+	#block-block-2 {  background-image: none; padding: 20px 3%; width: 94%;}
+	.view-interlocuteurs .view-filters { margin: 0 0 10px;padding: 15px 0 15px 2%; width: 94%;}
+	.view-interlocuteurs .gmap a.modification,
+	.node-interlocuteur #coordonnees .gmap,
+	.node-interlocuteur #coordonnees .gmap a.modification { background-image: none; padding: 3% 2%; width: 96%;}
+	.views-exposed-widget.views-submit-button,
+	.views-exposed-widget.views-reset-button{margin-bottom: 5px;}
+	.view-interlocuteurs #bloc-vert, .view-interlocuteurs #bloc-orange {margin: 10px 0; padding: 3%; width: 94%;}
+	#main-wrapper #main .region-content .item-list .pager li{margin-bottom: 10px !important;}
+	.view-ressources-documentaires .views-row{padding-left: 0; padding-right: 0;}
+	.view-ressources-documentaires .views-row .views-field-title{margin-left: 0;}
+	.view-ressources-documentaires .views-row .private { clear: left; float: left; margin-top: 10px; position: static;}
+	.view-ressources-documentaires .views-row .download a {float: right; margin-top: 10px; position: static;}
+	.views-exposed-form #edit-field-tag-tid-wrapper.views-exposed-widget, 
+	.views-exposed-form #edit-combine-wrapper.views-exposed-widget, 
+	.views-exposed-form #edit-title-wrapper.views-exposed-widget, 
+	.views-exposed-form #edit-body-value-wrapper.views-exposed-widget{margin-top: 12px;}
+	#block-system-main .view-actualites .item-list ul li .views-field-field-actu-visuel, 
+	#block-system-main .view-agenda .item-list ul li .views-field-field-agenda-visuel{width: 100%; text-align: center;}
+	#block-system-main .view-actualites .item-list ul li .views-field-field-actu-visuel img, 
+	#block-system-main .view-agenda .item-list ul li .views-field-field-agenda-visuel img{float: none !important;}
+	.views-exposed-form .views-exposed-widget.views-submit-button{margin: 20px 0; float: left;}
+	.node-interlocuteur #coordonnees .infos { padding: 15px 4%; width: 92%;}
+	h1{font: 22px/28px 'DINMedium';}
+	#bloc-caracteristiques{width: 97%;}
+	#bloc-caracteristiques #wrapper{ margin: 0;padding: 32px 2% 15px; position: relative; width: 96%;}
+	#bloc-caracteristiques .caroufredsel_wrapper{overflow-y:scroll !important;}
+	#bloc-caracteristiques .caroufredsel_wrapper #carousel{height: auto !important;}
+	.webform-client-form .form-item input[type="text"], 
+	.webform-client-form .form-item input[type="email"], 
+	.webform-client-form .form-item select	{padding: 0 0 0 3%; width: 96%;}
+	.webform-client-form .form-item textarea{max-width: 100%; width: 100%; min-width: 0;}
+	.webform-client-form .form-item.select_container span.select { height: 33px;  width: 95%;}
+	#main-wrapper #main #content.column .section #push_connexion,
+	#main-wrapper #main #content.column .section #push_connexion.alternative #push-container, 
+	#main-wrapper #main #push_connexion.interne #push-container{ float: left; margin: 40px 0; padding: 0 2% 0; position: relative; width: 96%; min-height: 0; height: auto;}
+	#main-wrapper #main #push_connexion.interne{margin-bottom: 10px;}
+	#main-wrapper #main #content.column .section #push_connexion.alternative a, #main-wrapper #main #push_connexion.interne a { display: block; height: 23px; margin-top: 25px; position: static; width: auto;}
+	fieldset.captcha.form-wrapper .fieldset-wrapper { float: left;  margin-top: 28px;  padding: 0; width: 100%;	}
+	form#user-login{padding: 4%;}
+	form#user-login input{width: 94%; -webkit-appearance: none; }
+	form#user-login input#edit-submit{margin-top: 10px; display: inline-block;}
+	a#btn-espace-adherent { background: none repeat scroll 0 0 #4B4B4B; display: block; font: 14px/50px 'DINLight';
+    height: 50px; padding: 0; text-align: center; text-decoration: none; width: 100%;}
+    a#btn-espace-adherent-logged {  background: url("../images/icon_deconnexion.png") no-repeat scroll 89% center #E76807;
+    color: #FFFFFF; display: block; float: right; font: 14px/40px 'DINLight'; height: 40px; padding: 0; text-align: center;
+    text-decoration: none; transition: all 0.25s ease-in-out 0s; width: 100%;}
+    #footer #block-block-4 #liens-left span#copyright{border: none;}
+    #footer #block-block-4 #liens-left a { display: inline-block; margin-top: 5px;}
+	/*MENU PRINCIPAL*/
+	
+	#btn-menu {	background: url("../images/icon_menu_mobile.png") no-repeat scroll 10px 11px #E76807;
+	    color: #FFFFFF;  cursor: pointer;  display: none;  float: left; font-family: "Arial";  font-size: 11px;
+	    font-weight: bold;  height: 40px;  line-height: 40px;  padding: 0 20px 0 45px;  position: absolute;  right: 0;
+	    text-transform: uppercase;  top: -10px;	}	
+	#block-menu-block-1{ width: 100%; margin: 0; position: absolute; top:68px;height: auto; border: none;}
+	#block-menu-block-1 .menu-block-1 > ul.menu {  border-top:none;margin: 0;   padding: 0;  position: absolute;  top: 42px;width: 100%;
+	    z-index: 999;}
+	#block-menu-block-1 ul.menu,
+	#block-menu-block-1 ul.menu .menu,
+	#block-menu-block-1 ul.menu li,
+	#block-menu-block-1 ul.menu li .menu li,
+	#block-menu-block-1 ul.menu li a,
+	#block-menu-block-1 ul.menu li a .menu li a,
+	#block-menu-block-1 ul.menu li a:hover,
+	#block-menu-block-1 ul.menu li a .menu li a:hover,
+	#block-menu-block-1 .menu li:hover .menu li a{display: inherit; border: none; padding: 0; margin: 0; font-size: 12px; color: #333;  line-height: 16px;font-weight: bold; width: 100%; max-width: none;background: none; text-transform: none; height: auto; line-height: inherit;}
+	#block-menu-block-1 ul.menu .active-trail,
+	#block-menu-block-1 ul.menu .active-trail .active-trail,
+	#block-menu-block-1 ul.menu .active-trail:hover,
+	#block-menu-block-1 ul.menu .active-trail .active-trail:hover{color: #E76807;}
+	
+	#block-menu-block-1 .menu-block-1 > ul > li > a {  min-height: 36px;  padding-bottom: 0;}
+	/**/
+	#btn-menu{display: block;}
+	#block-menu-block-1 .menu-block-1 > ul{  background: none repeat scroll 0 0 #DDDDDD;  display: none;  left: 0;
+	    margin-left: -3%;  padding: 10px 2% 0 0;  padding-right: 0;  position: absolute; top: 57px; width: 104%;  z-index: 50;	
+	    -webkit-box-shadow: 0;-moz-box-shadow: 0;box-shadow:0;}
+	#block-menu-block-1 ul.menu > li.menu-mlid-570 { border-top: 8px solid #dcdcdc;}
+	#block-menu-block-1 ul.menu > li{margin-bottom: 10px; border-bottom: 8px solid #FFFFFF; position: relative; padding-right: 2%; min-height: 50px; width: 100%; padding-right: 0;}
+	#block-menu-block-1 ul.menu > li .bouton-expand{background: url("../images/picto-plus-gris.png") no-repeat scroll 75% 12px rgba(0, 0, 0, 0);  display: block;   height: 40px; padding: 7px 15px 7px 3px;  position: absolute;  right: 0; text-indent: -9999px;
+	    top: -6px;  width: 50px;  z-index: 20;	}
+	#block-menu-block-1 ul.menu > li .bouton-expand.active{background: url("../images/picto-moins-orange.png") no-repeat scroll 75% 12px rgba(0, 0, 0, 0);}
+	#block-menu-block-1 ul.menu > li.last{margin-bottom: 0; /* border: none; */}
+	#block-menu-block-1 .menu-block-1 > ul.menu ul.menu {  display: block;  background: #eeeeee; float: left;
+	    padding-bottom: 10px; padding-left: 10%;  padding-top: 10px;  position: static;  display: none;  width: 90%; }
+	#block-menu-block-1 ul li{width: 100%; max-width: none; height: auto; border: none;} 
+	#block-menu-block-1 ul.menu .menu li a{width: 100%; display: inline-block; max-width: none; background-image: none; position: static ;  font-weight: normal;}
+	#block-menu-block-1 ul.menu li a,
+	#block-menu-block-1 ul.menu li a .menu li a,
+	#block-menu-block-1 ul.menu li a:hover,
+	#block-menu-block-1 ul.menu li a .menu li a:hover,
+	#block-menu-block-1 .menu li:hover .menu li a{padding-top: 7px; padding-bottom:7px; font-weight: normal;}
+	
+	#block-menu-block-1 .menu-block-1 > ul > li > a,
+	#block-menu-block-1 .menu-block-1 > ul > li > a:hover{padding-left: 5%; padding-right: 10%; text-transform: uppercase; width: 85%; text-transform: uppercase;}
+	#block-menu-block-1 li.menu-mlid-237:hover a, #block-menu-block-1 li.menu-mlid-237.active a{display: block;}
+	#conteneur{float: left;}
+	#main-wrapper #main #content.column .section #push_connexion a{position: static; display: inline-block; margin-bottom: 10px;}
+	/*DISPLAY NONE*/
+	#wrapper-slider,
+	.top_header .liens-top,
+	.view-ressources-documentaires .views-row .extension,
+	.node-interlocuteur a#retour_liste_resultats, 
+	#block-search-form,
+	.region.region-header,
+	#tetiere-wrapper{display: none;}
+	
+	/*WIDTH 100%*/
+	#main-wrapper #main #content.column .section #focus,
+	.wrapper-container,
+	.top-menu,
+	.front #main-wrapper #main #content.column .section,
+	#main-wrapper #main #content.column .section #focus .item-list ul,
+	#main-wrapper #main #content.column .section #focus .item-list ul li,
+	#focus-more,
+	#footer-wrapper .section #footer-columns,
+	#bloc-addthis-et-partenaires,
+	#bloc-projet-cofinance,
+	#bloc-addthis-et-partenaires .addthis_toolbox,
+	#footer-wrapper .section #footer-columns #block-block-3,
+	#bloc-liens-utiles-et-contact,
+	#footer-wrapper .section #footer .region-footer-bot,
+	#bloc-sliders .view-actualites .item-list ul li,
+	#main-wrapper #main #conteneur #content.column.bloc .section .region-content,
+	#main-wrapper #main #conteneur #content.column.bloc,
+	#conteneur,
+	#main-wrapper #main #conteneur #content.column.bloc .section .region-content .content .node-page .content,
+	ul.menu-section,
+	#breadcrumb,
+	#sidebar-first,
+	#main-wrapper #main #conteneur #content.column,
+	#main-wrapper #main #conteneur #content.column .section .region-content,
+	.view-interlocuteurs .gmap,
+	.view-interlocuteurs #views-exposed-form-interlocuteurs-page .views-exposed-form .views-exposed-widget,
+	.view-interlocuteurs .view-content .views-row .views-field,
+	#block-system-main .view-actualites .item-list ul li .views-field, 
+	#block-system-main .view-agenda .item-list ul li .views-field,
+	.region-sidebar-first,
+	.node-interlocuteur #coordonnees .gmap, 
+	.view-interlocuteurs .gmap,
+	.node-interlocuteur #coordonnees .gmap,
+	.node-interlocuteur #coordonnees .gmap a.modification, 
+	.view-interlocuteurs .gmap a.modification,
+	#c-carousel,
+	#bloc-caracteristiques .caroufredsel_wrapper,
+	#bloc-caracteristiques .caroufredsel_wrapper #carousel,
+	#carousel .slide,
+	.webform-client-form .form-item,
+	.webform-client-form .form-actions,
+	.webform-client-form label,
+	.webform-client-form .form-item .form-textarea-wrapper,
+	.not-logged-in.page-user #main-wrapper #main #conteneur #content.column .section .region-content #block-system-main,
+	.not-logged-in.page-user #main-wrapper #main #conteneur #content.column .section .region-content #block-block-5,
+	form#user-login div div div.description,
+	#bloc-sliders .view-agenda .item-list ul li
+	{
+		width: 100% !important;
+		margin-left: 0 !important;
+		margin-right: 0 !important;
+	}
+	#block-system-main .view-actualites .item-list ul li .views-field-field-actu-date, 
+	#block-system-main .view-agenda .item-list ul li .views-field-field-agenda-date,
+	#block-system-main .view-actualites .item-list ul li .views-field-field-actu-thematique,
+	.form-checkboxes .form-item label{width: auto !important;}
+	select[multiple]{ margin-left: 0; padding-left: 0 !important; width: 100% !important;}
+}

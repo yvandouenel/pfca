@@ -1,0 +1,452 @@
+<?php
+
+
+function utils_get_menu($search,$tree){
+    foreach($tree as $key => $element){
+        if(is_numeric($key)){
+            if((int)$key == $search){
+                return $element;
+            }elseif(sizeof($element['#below'])){
+                $result = utils_get_menu($search,$element['#below']);
+                if(!is_null($result)) {
+                    return $result;
+                }
+            }
+        }
+    }
+    return NULL;
+}
+function choosit_hacks_init(){
+    if( arg(0) == 'foire-aux-questions' ){
+        menu_set_active_item('foire-aux-questions');
+    }
+}
+
+//Remove wysiwyg format because i18n cant handle it
+function choosit_hacks_string_translate_page_form_submit($form, &$form_state) {
+    foreach($form_state['values']['strings'] AS $name => $field) {
+        if(preg_match('/blocks:block:[0-9]+:body/i',$name)){
+            unset($form_state['values']['strings'][$name]['format']);
+        }
+    }
+}
+/*
+	SET TITLE	
+*/
+function choosit_hacks_views_pre_render(&$view) {
+  if ($view->name == 'interlocuteurs') {
+	  if($_GET['prov']){
+		$mynode = node_load($_GET['prov']);
+		$view->build_info['title'] = $mynode->title;
+	}
+  }
+}
+/*
+ * Duplications des field collections quand on fait une traduction
+ */
+function choosit_hacks_entity_load($entities, $type){
+    if(arg(0) == 'node' && arg(1) == 'add' && !empty($_GET['translation'])){
+        foreach($entities as $id => &$entity){
+            if(is_a($entity,'FieldCollectionItemEntity')){
+                unset($entity->item_id);
+            }
+        }
+    }
+}
+
+function nid_translate($nid,$langcode = null){
+    if(!$langcode){
+        global $language;
+        $langcode = $language->language;
+    }
+
+    $node = node_load($nid);
+    $translations = translation_node_get_translations($node->tnid);
+
+    if($translations[$langcode]->nid){
+        $nid = $translations[$langcode]->nid;
+    }
+
+    return $nid;
+}
+
+function choosit_hacks_node_presave($node){
+    if($node->type == 'page'){
+        if(isset($node->field_page_blocks['und'])){
+            foreach($node->field_page_blocks['und'] as $index => $item){
+                $block = field_collection_item_load($item['value']);
+                if(!sizeof($block->field_block_title)){
+                    unset($node->field_page_blocks['und'][$index]);
+                }
+            }
+        }
+    }
+}
+
+/*
+ * Implements hook_node_view()
+ */
+function choosit_hacks_node_view($node, $view_mode, $langcode){
+    if($view_mode == 'full'){
+        if($node->type == 'news'){
+            drupal_set_title(t('News'));
+            //drupal_set_title(t(''));
+        }
+        if($node->type == 'agenda'){
+            //drupal_set_title(t('Events'));
+            //drupal_set_title(t(''));
+        }
+        if($node->type == 'collectivites'){
+            drupal_set_title(t('Annuaire des collectivités'));
+            //drupal_set_title(t(''));
+        }
+        if($node->type == 'groupware'){
+            drupal_set_title(t('Mes groupes de travail'));
+            //drupal_set_title(t(''));
+        }
+    }
+}
+
+
+/**
+ * Implements user login redirect for specific role
+ */
+function choosit_hacks_user_login(&$edit, $account) {
+	// Do not redirect when the user is resetting her password.
+	if (!isset($_POST['form_id']) || $_POST['form_id'] != 'user_pass_reset') {
+		if (in_array('adherents', $account->roles)) {
+			drupal_goto('node/891');
+		}
+	}
+}
+
+
+/**
+ * Implements hook_form_alter().
+ */
+function choosit_hacks_form_alter(&$form, &$form_state, $form_id) {
+
+
+  // Alter textfield for date to integrate popup calendar
+  /*$form["submitted"]["expected_move_date"] = array(
+    '#type' => 'item',
+    'finished_after' => array(
+      '#type' => 'textfield',
+      '#attributes' => array('class' => array('datepicker')),
+      '#required' => TRUE,
+    )
+  );
+
+  $form['#after_build'] = array('custom_form_uidatepicker');*/
+
+  switch ($form_id) {
+
+  	/*
+  	* Augmente le maxlength pour le formulaire de recherche des documents
+  	*/
+	case 'views_exposed_form':
+
+	if($form_state['view']->name=='d'){
+		//dpm($form);
+		$form['title']['#maxlength'] = 255;
+	}
+	break;
+    /*
+    * Ajout du bouton mot de passe perdu sur le formulaire de connexion
+    */
+    case 'user_login':
+          $form['pwd'] = array(
+            '#type' => 'markup',
+             //'#markup' => '<a href="/formulaires/mot-de-passe-perdu" id="lost_pwd">Mot de passe perdu</a>',
+            '#markup' => '<a href="/user/password" id="lost_pwd">Mot de passe perdu</a>',
+          );
+	break;
+    case 'search_form':
+
+      if (isset($form['module']) && $form['module']['#value'] == 'node' && isset($form['advanced'])) {
+
+
+        // Taxonomy
+            $vocabularies = taxonomy_get_vocabularies();
+            $options = array();
+
+            foreach ($vocabularies as $vid => $vocabulary) {
+              if (variable_get('custom_search_advanced_voc' . $vid . '_display', TRUE) == FALSE) {
+                continue;
+              }
+
+              $tree = taxonomy_get_tree($vid, 0, 2);
+              //$options[$vocabulary->name] = array();
+
+              if ($tree) {
+                $tid_tree = array();
+                foreach ($tree as $term) {
+                  $options[$term->tid] = $term->name;
+                  $class[$term->tid] = $term->depth;
+                  if($term->depth == 1) {
+                    $tid_tree[$term->parents[0]][] = $term->tid;
+                  }
+                }
+                unset($tree);
+              }
+            }
+
+            $text_value = $form['basic']['keys']['#default_value'];
+            // Extraction des termes de taxonomie de la chaîne de recherche
+            $match = array();
+            preg_match('|term:(.*)$|i', $text_value, $match);
+
+            $terms = explode(',', $match[1]);
+
+            foreach($terms as $index => $tid){
+              if(!$tid){
+                unset($terms[$index]);
+              }
+            }
+
+            // Extraction des types de la chaîne de recherche
+            $match = array();
+            preg_match('/type:([^ ]*)/i', $text_value, $match);
+            $types = explode(',', $match[1]);
+
+            if (!empty($options)) {
+              $form['advanced']['term'] = array(
+                '#title'    => t('Limit search to'),
+                '#type'     => 'checkboxes',
+                '#options'  => $options,
+                '#prefix'   => '<div class="criterion">',
+                '#suffix'   => '</div>',
+                //'#default_value' => $terms,
+              );
+            }
+
+            $form['basic']['keys']['#default_value'] = preg_replace('|^(.*)term:[^ ]*|i', '$1', $form['basic']['keys']['#default_value']);
+            $form['basic']['keys']['#default_value'] = preg_replace('|^(.*)type:[^ ]*|i', '$1', $form['basic']['keys']['#default_value']);
+
+            /**
+             * Termes de taxonomie
+             */
+            $form['advanced']['term'] = form_process_checkboxes($form['advanced']['term']);
+            foreach (element_children($form['advanced']['term']) as $key) {
+               $form['advanced']['term'][$key]['#attributes']['class'] = array('level'.$class[$key]);
+               if(in_array($key, $terms)){
+                  if($class[$key] == 0) {
+                      if(is_array($tid_tree[$key])) {
+                        $terms = array_diff($terms, $tid_tree[$key]);
+                      }
+                  }
+                  $form['advanced']['term'][$key]['#attributes']['checked'] = 'checked';
+               }
+            }
+
+            /**
+             * Types de contenu
+             */
+            $form['advanced']['type'] = form_process_checkboxes($form['advanced']['type']);
+            foreach(element_children($form['advanced']['type']) as $key) {
+               if(in_array($key, $types)){
+                 $form['advanced']['type'][$key]['#attributes']['checked'] = 'checked';
+               }
+            }
+            array_unshift($form['#submit'], 'custom_search_term');
+        }
+    }
+
+    // Ajout de champs pour envoi de mail au publieur
+    if(isset($form['#node_edit_form']) && $form['#node_edit_form']){
+        global $user;
+
+        if(in_array('Rédacteur', $user->roles)){
+            $form['publish_mail'] = array(
+                '#type' => 'fieldset',
+                '#title' => 'Envoi de mail au publieur',
+                '#weight' => 100,
+            );
+
+            // On recup la liste des publieurs
+            $users = users_with_role(15);
+
+            $options = array();
+            foreach($users as $uid => $u){
+                $options[$uid] = $u->name;
+            }
+
+            $form['publish_mail']['publish_user'] = array(
+                '#type' => 'select',
+                '#title' => 'Publieur',
+                '#options' => $options,
+            );
+
+            $form['publish_mail']['publish_comments'] = array(
+                '#type' => 'textarea',
+                '#title' => 'Commentaires',
+            );
+
+            $form['publish_mail']['publish_confirm'] = array(
+                '#type' => 'checkbox',
+                '#title' => 'Envoyer un mail au publieur sélectionné',
+            );
+
+            $form['publish_mail']['publish_nid'] = array(
+                '#type' => 'hidden',
+                '#default_value' => $form['#node']->nid,
+            );
+        }
+    }
+}
+
+function _send_mail($to, $subject, $message, $from = 'default_from'){
+
+    module_load_include('inc', 'mailsystem', 'html_to_text');
+
+    $my_module = 'annonces';
+    $my_mail_token = microtime();
+
+    if ($from == 'default_from') {
+        // Change this to your own default 'from' email address.
+        $from = variable_get('system_mail', 'infos@choosit.com');
+    }
+
+    $message = array(
+        'id' => $my_module . '_' . $my_mail_token,
+        'to' => $to,
+        'subject' => $subject,
+        'body' => array($message),
+        'headers' => array(
+            'From' => $from,
+            'Sender' => $from,
+            'Return-Path' => $from,
+            'MIME-Version' => '1.0',
+            'Content-Type' => 'text/plain; charset=UTF-8; format=flowed; delsp=yes',
+            'Content-Transfer-Encoding' => '8Bit',
+            'X-Mailer' => 'Drupal',
+        ),
+    );
+    $system = drupal_mail_system($my_module, $my_mail_token);
+    $message = $system->format($message);
+
+    $system->mail($message);
+}
+
+function choosit_hacks_node_insert($node){
+    global $user;
+
+    if($node->publish_confirm == 1){
+
+        $subject = "[Swelia] Demande de publication d'un contenu";
+        $user_to = user_load($node->publish_user);
+
+        $text = 'URL de la page : <a href="'.url('node/' . $node->nid, array('absolute' => true)).'">' . url('node/' . $node->nid, array('absolute' => true)) . "</a><br>";
+        $text .= 'Publier : <a href="'.url('node/' . $node->nid . '/revisions/'.$node->vid .'/publish', array('absolute' => true)).'">' . url('node/' . $node->nid . '/revisions/'.$node->vid .'/publish', array('absolute' => true)) . "</a><br><br>";
+        $text .= $node->publish_comments;
+
+        _send_mail($user_to->mail, $subject, $text, $user->mail);
+    }
+}
+
+function choosit_hacks_node_update($node){
+    global $user;
+
+    if($node->publish_confirm == 1){
+
+        $subject = "[Swelia] Demande de publication d'un contenu";
+        $user_to = user_load($node->publish_user);
+
+        $text = 'URL de la page : <a href="'.url('node/' . $node->nid, array('absolute' => true)).'">' . url('node/' . $node->nid, array('absolute' => true)) . "</a><br>";
+        $text .= 'Publier : <a href="'.url('node/' . $node->nid . '/revisions/'.$node->vid .'/publish', array('absolute' => true)).'">' . url('node/' . $node->nid . '/revisions/'.$node->vid .'/publish', array('absolute' => true)) . "</a><br><br>";
+        $text .= $node->publish_comments;
+
+        _send_mail($user_to->mail, $subject, $text, $user->mail);
+    }
+}
+
+function users_with_role($role, $active_user = TRUE) {
+      $uids = array();
+      $users = array();
+      if (is_int($role)) {
+        $my_rid = $role;
+      }
+      else {
+        $role_obj = user_role_load_by_name($role);
+        $my_rid = $role_obj->rid;
+      }
+      $result = db_select('users_roles', 'ur')
+        ->fields('ur')
+        ->condition('ur.rid', $my_rid, '=')
+        ->execute();
+      foreach ($result as $record) {
+        $uids[] = $record->uid;
+      };
+      $query = new EntityFieldQuery();
+      $query->entityCondition('entity_type', 'user')
+        ->propertyCondition('uid', $uids, 'IN');
+      if ($active_user) {
+        $query->propertyCondition('status', 1);
+      }
+      $entities = $query->execute();
+      if (!empty($entities)) {
+        $users = entity_load('user', array_keys($entities['user']));
+      }
+      return $users;
+}
+
+//Date picker in webform with date popup
+
+/*function custom_form_uidatepicker($form, $form_state) {
+  drupal_add_library('system', 'ui.datepicker');
+  drupal_add_js("(function ($) { $('.datepicker').datepicker({
+      showOn: 'both',
+      buttonImage: '/sites/all/modules/webform/images/calendar.png',
+      buttonImageOnly: true,
+      dateFormat: 'dd/mm/yy',
+    });
+    $('.datepicker').datepicker( 'option', 'minDate', 'd' );
+    })(jQuery);", array('type' => 'inline', 'scope' => 'footer', 'weight' => 5));
+
+    return $form;
+}*/
+
+function custom_search_term(&$form, &$form_state){
+    /**
+     * Suppression des termid == 0
+     */
+    $form_state['values']['term'] = array_filter($form_state['values']['term']);
+
+    $vocabulary_tree = taxonomy_get_tree(3, 0, 2);
+    $tid_tree = array();
+    foreach($vocabulary_tree as $term) {
+        if($term->depth == 1) {
+            $tid_tree[$term->parents[0]][] = $term->tid;
+        }
+    }
+
+    $match = array();
+    $replace = '';
+
+    preg_match('|term:(.*)$|i', $form_state['values']['processed_keys'], $match);
+    $terms = array_filter(explode(',', $match[1]));
+    if(!empty($terms)) {
+        $children_terms = array();
+        foreach($terms as $termid) {
+            if(isset($tid_tree[$termid])) {
+                $children_terms = array_merge($children_terms, $tid_tree[$termid]);
+            }
+        }
+
+        $terms = array_unique(array_merge($terms, $children_terms));
+
+        $replace = ' term:' . implode(',', $terms);
+    }
+
+    $form_state['values']['processed_keys'] = preg_replace('| term:.*|i', $replace, $form_state['values']['processed_keys']);
+
+
+}
+
+function choosit_hacks_menu_alter(&$items) {
+  // Example - disable the page at node/add
+  /*$items['users/%user']['type'] = MENU_CALLBACK;
+  $items['user/%user/edit']['type'] = MENU_CALLBACK;
+  $items['user/%user/subscriptions']['type'] = MENU_CALLBACK;*/
+}
+?>

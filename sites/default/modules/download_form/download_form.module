@@ -1,0 +1,213 @@
+<?php
+
+// Override de l'upload de fichier (FIELD)
+module_load_include('inc','download_form','download_form.field');
+// Le formulaire en question
+module_load_include('inc','download_form','download_form.form');
+
+/*
+ * Fonction pour forcer le téléchargement d'un fichier
+ * @param : fid du fichier
+ *
+ * /!\ Fonction à optimiser & réécrire pour être + clair !!!
+ */
+function download_form_force_download($_fid){    
+    
+    if(is_numeric($fid)){
+        return;
+    }else{
+        $df = download_form_load($_fid);
+        $fid = $df['fid'];
+        
+        if(!$df){
+            if(variable_get('download_form_default',0) == 1){
+                return t('Access denied') . '
+                    <br/><br/>
+                    <a href="/'.drupal_get_path_alias($_GET['destination']).'">'.t('Go back').'</a>
+                ';
+            }else{
+                $no_need_key = true;
+            }
+        }
+    }
+    
+    // Vérification de la clé
+    if(!$no_need_key && $df['status']){
+        $req = db_select('download_form','df')
+            ->fields('df',array())
+            ->condition('fid',$fid)
+            ->condition('cle',$_GET['key'])
+            ->condition('downloaded',0)
+            ->execute()->fetchAssoc();
+            
+        if(!$req){
+            return t('Temporary link to download this file is invalid') . '
+                <br/><br/>
+                <a href="/'.drupal_get_path_alias($_GET['destination']).'">'.t('Go back').'</a>
+            ';
+        }else{
+            db_update('download_form')
+                ->condition('cle',$_GET['key'])
+                ->condition('fid',$fid)
+                ->fields(array(
+                    'downloaded' => 1,
+                    'cle' => '',
+                ))
+                ->execute();
+        }
+    }
+    
+    // Code tout pourri (pas le temps)
+    if(is_string($fid) || !$fid){
+        $req = db_query("SELECT fid,status FROM file_managed WHERE MD5(fid) = '".$_fid."'");
+        foreach($req as $result){
+            $res = (array)$result;
+        }
+        $fid = $res['fid'];
+    }
+    
+    $file = file_load($fid);
+  
+    if (empty($fid) || empty($file) || !$file->status) {
+        return drupal_access_denied();
+    }
+    
+    $headers = array(
+        'Content-Type'              => 'force-download',
+        'Content-Disposition'       => 'attachment; filename="' . $file->filename . '"',
+        'Content-Length'            => $file->filesize,
+        'Content-Transfer-Encoding' => 'binary',
+        'Pragma'                    => 'no-cache',
+        'Cache-Control'             => 'must-revalidate, post-check=0, pre-check=0',
+        'Expires'                   => '0',
+        'Accept-Ranges'             => 'bytes'
+    );
+  
+    // Let other modules provide headers and controls access to the file.
+    if (in_array(-1, $headers)) {
+        return drupal_access_denied();
+    }
+  
+    if (count($headers)) {
+        file_transfer($file->uri, $headers);
+    }
+}
+
+/*
+ * hook_permission()
+ */
+function download_form_permission(){
+    return array(
+        'administer download form' => array(
+            'title' => t('Administer download form'), 
+            'description' => t('Perform administration tasks for download form module'),
+        ),
+        'download form' => array(
+            'title' => t('Access to download forms'), 
+            'description' => t('User can use download forms'),
+        ),
+    );
+}
+
+/*
+ * hook_menu()
+ */
+function download_form_menu(){
+    // Front
+    $items['download-form/%'] = array(
+        'title' => 'Download form',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('form_download',1,2),
+        'access arguments' => array('download form'),
+    );
+    $items['download-form/dl/%'] = array(
+        'title' => 'Download form',
+        'page callback' => 'form_download_page',
+        'page arguments' => array(2),
+        'access arguments' => array('download form'),
+    );
+    $items['download-form/dl-file/%'] = array(
+        'title' => 'Download form',
+        'page callback' => 'download_form_force_download',
+        'page arguments' => array(2),
+        'access arguments' => array('download form'),
+    );
+    
+    // Admin
+    $items['admin/structure/download-form'] = array(
+        'title' => 'Downloaded files',
+        'description' => t('View downloaded files and set settings'),
+        'page callback' => 'drupal_goto',
+        'page arguments' => array('admin/structure/download-form/list'),
+        'access arguments' => array('administer download form'),
+    );
+    $items['admin/structure/download-form/list/export'] = array(
+        'title' => 'Export',
+        'page callback' => 'download_form_admin_export',
+        'page arguments' => array(),
+        'access arguments' => array('administer download form'),
+        'type' => MENU_LOCAL_ACTION,
+        'file' => 'download_form.admin.inc',
+    );
+    $items['admin/structure/download-form/settings'] = array(
+        'title' => 'Settings',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('download_form_admin_settings'),
+        'access arguments' => array('administer download form'),
+        'type' => MENU_LOCAL_TASK,
+        'file' => 'download_form.admin.inc',
+    );
+    $items['admin/structure/download-form/list'] = array(
+        'title' => 'Downloaded files',
+        'description' => t('View downloaded files and set settings'),
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('download_form_admin_list'),
+        'access arguments' => array('administer download form'),
+        'type' => MENU_LOCAL_TASK,
+        'file' => 'download_form.admin.inc',
+    );
+    
+    return $items;
+}
+
+function df_title_callback(){
+    return t('Download form');
+}
+
+function download_form_download_url($fid){
+    if(is_numeric($fid))$fid = md5($fid);
+    return url('download-form/dl-file/' . $fid);
+}
+function download_form_download_path($fid){
+    if(is_numeric($fid))$fid = md5($fid);
+    return 'download-form/dl-file/' . $fid;
+}
+
+function download_form_url($fid){
+    if(is_numeric($fid))$fid = md5($fid);
+    return url('download-form/'.$fid);
+}
+function download_form_path($fid){
+    if(is_numeric($fid))$fid = md5($fid);
+    return 'download-form/'.$fid;
+}
+
+function download_form_load($fid){
+    
+    if(is_string($fid)){
+        $req = db_query("SELECT fid,status FROM download_form_files WHERE MD5(fid) = '".$fid."'");
+        foreach($req as $result){
+            $res = (array)$result;
+        }
+    }else{
+        $req = db_select('download_form_files','dff')
+            ->fields('dff',array('fid','status'))
+            ->condition('fid',$fid)
+            ->execute();
+            
+        $res = $req->fetchAssoc();
+    }
+    
+    return $res;
+}
+?>

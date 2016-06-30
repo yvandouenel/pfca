@@ -1,0 +1,4 @@
+name = Simplenews Extras
+description = Extras functions for Simplenews module
+package = Choosit
+core = 7.x

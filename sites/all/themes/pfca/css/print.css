@@ -1,0 +1,251 @@
+
+
+
+@font-face {
+    font-family: 'DIN-Black';
+    src: url('font/din-black-webfont.eot');
+    src: url('font/din-black-webfont.eot?#iefix') format('embedded-opentype'),
+         url('font/din-black-webfont.woff') format('woff'),
+         url('font/din-black-webfont.ttf') format('truetype'),
+         url('font/din-black-webfont.svg#DIN-BlackRegular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'DINBold';
+    src: url('font/din-bold-webfont.eot');
+    src: url('font/din-bold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('font/din-bold-webfont.woff') format('woff'),
+         url('font/din-bold-webfont.ttf') format('truetype'),
+         url('font/din-bold-webfont.svg#DINRegular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'DINMedium';
+    src: url('font/din-medium-webfont.eot');
+    src: url('font/din-medium-webfont.eot?#iefix') format('embedded-opentype'),
+         url('font/din-medium-webfont.woff') format('woff'),
+         url('font/din-medium-webfont.ttf') format('truetype'),
+         url('font/din-medium-webfont.svg#DINMedium') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'DINRegular';
+    src: url('font/din-regular-webfont.eot');
+    src: url('font/din-regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('font/din-regular-webfont.woff') format('woff'),
+         url('font/din-regular-webfont.ttf') format('truetype'),
+         url('font/din-regular-webfont.svg#DINRegular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'DINLight';
+    src: url('font/din-light-webfont.eot');
+    src: url('font/din-light-webfont.eot?#iefix') format('embedded-opentype'),
+         url('font/din-light-webfont.woff') format('woff'),
+         url('font/din-light-webfont.ttf') format('truetype'),
+         url('font/din-light-webfont.svg#DINLight') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* General Reset */
+html{
+	height: 100%;
+}
+
+/**{
+    margin:0px;
+    padding:0px;
+}
+*/
+
+html * {
+   	overflow: inherit !important;
+}
+
+body{
+	-webkit-print-color-adjust:exact;
+	margin:0;
+	height: 100%;
+	min-width:980px;
+	background: #f2ede6 none;
+	font: normal 14px/20px 'Arial';
+	color: #333333;
+	overflow-x:hidden;
+	-webkit-font-smoothing: antialiased;
+	
+	display: block;
+}
+
+ul li{
+	list-style-type: disc;
+}
+
+#breadcrumb{
+	margin-bottom: 30px;
+}
+
+#toolbar,
+.not-front #header,
+.not-front .top-menu,
+.not-front #sidebar-first,
+.not-front #tetiere-wrapper,
+.not-front #wrapper-bloc-sliders,
+#bloc-sliders,
+.not-front #footer-wrapper,
+.gallerie,
+.tabs.primary,
+.tabs,
+ul.action-links,
+.modification,
+a.printMe,
+#push_connexion,
+.node-interlocuteur a#retour_liste_resultats,
+#wrapper-breadcrumb{
+	display: none;
+}
+
+#main-wrapper #main #conteneur,
+#main-wrapper #main #conteneur #content.column,
+#main-wrapper #main #conteneur #content.column .section,
+#main-wrapper #main #conteneur #content.column .section .region-content{
+	width: 100% !important;
+}
+
+#main-wrapper #main #conteneur #content.column .section .region-content{
+	clear: both;
+}
+
+#conteneur{
+   	overflow: inherit !important;
+   	float: none !important;
+}
+
+#telechargement .content-telechargement{
+	padding: 19px 22px 35px;
+	display: block;
+}
+
+#telechargement .content-telechargement ul li{
+	list-style-type: disc;
+}
+
+.node-interlocuteur #coordonnees{
+	float: none !important;
+   	overflow: inherit !important;
+   	margin: 0;
+}
+
+.node-interlocuteur #coordonnees .gmap,
+.view-interlocuteurs .gmap{
+	display: none;
+}
+
+.node-interlocuteur #coordonnees .infos{
+    color: #666666;
+    font: 13px/18px 'Arial';
+    padding: 0;
+    width: 90%;
+    float: none !important;
+   	overflow: inherit !important;
+   	min-height: auto !important;
+   	height: auto !important;
+}
+
+.node-interlocuteur #coordonnees .infos .clearfix:after{
+	clear: none;
+	display: none;
+}
+
+.node-interlocuteur #coordonnees .infos .adresse{
+	margin-right: 25px;
+}
+
+.node-interlocuteur #coordonnees .infos .adresse,
+.node-interlocuteur #coordonnees .infos .complements{
+	float: left;
+}
+
+#bloc-caracteristiques{
+	border: none;
+	width: 100% !important;
+	padding: 0;
+	margin: 0;
+}
+
+#c-carousel{
+	float: none !important;
+   	overflow: inherit !important;
+	width: 100%;
+	margin: 0;
+}
+
+#pager{
+	display: none;
+}
+
+#wrapper{
+	padding: 0;
+	width: 100%;
+    float: none !important;
+   	overflow: inherit !important;
+}
+
+.caroufredsel_wrapper{
+	width: 100% !important;
+}
+
+#carousel{
+	height: auto !important;
+	width: 100% !important;
+}
+
+#carousel .slide H3{
+	margin: 25px 0 24px 0;
+}
+
+#carousel .slide{
+	padding: 0;
+	width: 100% !important;
+    float: none !important;
+   	overflow: inherit !important;
+   	font: 15px/22px 'Arial';
+}
+
+#carousel .slide div span{
+	font-weight: normal !important;
+}
+
+/*.view-interlocuteurs .gmap{
+	overflow: hidden;
+	width: 100%;
+	height: auto;
+	display: block;
+	margin: 0 0 190px 0;
+	float: none !important;
+   	overflow: inherit !important;
+}*/
+
+.node-interlocuteur #coordonnees .gmap{
+	/*overflow: hidden;
+	width: 100%;
+	height: auto;
+	clear: none;
+	display: block;
+	margin: 150px 0 550px 0;
+	max-height:auto;
+	min-height: auto;*/
+	
+	display: none;
+}
+
+
+

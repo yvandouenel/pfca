@@ -1,0 +1,4 @@
+name = Choosit Hacks
+description = Différents hacks
+package = Choosit
+core = 7.x

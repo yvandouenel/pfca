@@ -1,0 +1,4 @@
+/* Cache les checkboxes dans l'admin */
+#download-form-admin-list .form-type-checkbox{
+    display:none;
+}

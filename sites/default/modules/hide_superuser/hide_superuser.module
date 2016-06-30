@@ -1,0 +1,33 @@
+<?php
+/**
+ * Hide superuser (uid 1) from the user list (admin/people), excepted
+ * for himself
+ */
+function hide_superuser_form_user_admin_account_alter(&$form, &$form_state, $form_id) {
+    global $user;
+    if($user->uid != 1) {
+        unset($form['accounts']['#options'][1]);
+    }
+}
+
+/**
+ * Disallow submitting the editing form of the superuser, excepted for 
+ * himself
+ */
+function hide_superuser_form_user_profile_form_alter(&$form, &$form_state, $form_id) {
+    global $user;
+    if($form['#user']->uid == 1 && $user->uid != 1) {
+        $form['actions']['submit']['#disabled'] = TRUE;
+    }
+}
+
+/**
+ * Hide fields management and display management for admin/config/people
+ */
+function hide_superuser_menu_local_tasks_alter(&$data, $router_item, $root_path) {
+    global $user;
+    if($root_path == 'admin/config/people/accounts' && $user->uid != 1) {
+        $data['tabs'][0]['output'] = array();
+    }
+}
+?>

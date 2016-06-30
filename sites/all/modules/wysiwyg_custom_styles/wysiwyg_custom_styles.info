@@ -1,0 +1,10 @@
+name = WYSIWYG Custom Styles
+description = Permet de spécifier une liste de styles à intégrer dans CKEditor
+package = Choosit
+core = 7.x
+
+; Information added by drupal.org packaging script on 2011-04-28
+version = "7.x-1.0-dev"
+core = "7.x"
+project = "choosit"
+datestamp = "1303992401"

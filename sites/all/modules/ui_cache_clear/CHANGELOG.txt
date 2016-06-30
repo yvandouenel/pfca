@@ -1,0 +1,22 @@
+UI Cache Clear 7.x-1.x, xxxx-xx-xx
+------------------------------
+
+
+UI Cache Clear 7.x-1.0-beta5, 2014-03-01
+by kalabro: Added support for Ctools 1.4/Panels 3.4.
+
+
+UI Cache Clear 7.x-1.0-beta4, 2013-09-30
+------------------------------
+#2100919 by almamun, kalabro: Fixed Blocks without content become visible with UI Cache Clear enabled.
+
+
+UI Cache Clear 7.x-1.0-beta3, 2013-09-30
+------------------------------
+By kalabro: Added automated tests for block cache clearing.
+By kalabro: Added Path Breadcrumbs support.
+
+
+UI Cache Clear 7.x-1.0-beta2, 2013-05-23
+------------------------------
+By kalabro: Added "Clear current page" link with Boost support. Integrated in Admin menu and Shortcut modules.

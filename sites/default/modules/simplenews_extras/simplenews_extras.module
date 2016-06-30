@@ -1,0 +1,255 @@
+<?php
+
+/**
+ * se_mail($to, $subject, $message, $form = 'default_from')
+ * Permet d'envoyer un mail
+ */
+function se_mail($to, $subject, $message, $from = 'default_from'){
+
+    module_load_include('inc', 'mailsystem', 'html_to_text');
+
+    $my_module = 'simplenews_extras';
+    $my_mail_token = microtime();
+	
+    if ($from == 'default_from') {
+        // Change this to your own default 'from' email address.
+        $from = variable_get('system_mail', 'pascal@choosit.com');
+    }
+
+    $message = array(
+        'id' => $my_module . '_' . $my_mail_token,
+        'to' => $to,
+        'subject' => $subject,
+        'body' => array($message),
+        'headers' => array(
+            'From' => $from,
+            'Sender' => $from,
+            'Return-Path' => $from,
+            'MIME-Version' => '1.0',
+            'Content-Type' => 'text/plain; charset=UTF-8; format=flowed; delsp=yes',
+            'Content-Transfer-Encoding' => '8Bit',
+            'X-Mailer' => 'Drupal',
+        ),
+    );
+
+    $system = drupal_mail_system($my_module, $my_mail_token);
+    $message = $system->format($message);
+
+    $system->mail($message);
+}
+
+/**
+ * Permet d'afficher le theme d'admin sur l'onglet "Newsletter Editions" de Simplenews Scheduler
+ */
+function simplenews_extras_admin_paths(){
+    return array(
+        'node/*/editions' => TRUE,
+    );
+}
+
+/***
+ * Implements hook_FORM_ID_alter()
+ * Permet de modifier le formulaire d'envoi d'une newsletter
+ */
+function simplenews_extras_form_simplenews_node_tab_send_form_alter(&$form, &$form_state) {
+
+    /**
+     * Petit code qui permet de renvoyer une newsletter
+     * Trouvé ici : https://drupal.org/node/429028#comment-6122162
+     */
+    //if (user_access('administer simplenews settings')) {
+      $newsletter = simplenews_newsletter_load($form['nid']['#value']);
+      if ($newsletter->status == SIMPLENEWS_STATUS_SEND_READY) {
+        $form['options']['submit'] = array(
+          '#type' => 'submit',
+          '#value' => t('Reset newsletter status to “not sent”'),
+          '#submit' => array('simplenews_resend_submit_simplenews_form_send_not'),
+        );
+      }
+      if ($newsletter->status == SIMPLENEWS_STATUS_SEND_NOT) {
+        $form['options']['send_not'] = array(
+          '#type' => 'button',
+          '#value' => t('Set newsletter status to “has been sent”'),
+          '#validate' => array('simplenews_resend_submit_simplenews_form_send_ready'),
+        );
+      }
+    //}
+
+    /**
+     * Permet d'afficher le nombre de mails à envoyer sur cette newsletter
+     */
+    $nSend = db_select('simplenews_mail_spool', 'sspool')
+      ->fields('sspool')
+      ->condition('nid', $form['nid']['#value'])
+      ->execute()
+      ->fetchAll(PDO::FETCH_ASSOC);
+
+    $form['stats'] = array(
+      '#type' => 'markup',
+      '#markup' => 'Il reste ' . count($nSend) . ' mail(s) à envoyer ('.l('Lancer le cron', 'admin/reports/status/run-cron', array('query' => drupal_get_destination())).')<br/><br/>',
+    );
+}
+
+/**
+ * Change le status de la newsletter en "Non envoyé"
+ * https://drupal.org/node/429028#comment-6122162
+ */
+function simplenews_resend_submit_simplenews_form_send_not($form, &$form_state) {
+  if (user_access('administer simplenews settings')) {
+    simplenews_newsletter_update_sent_status(node_load($form['nid']['#value']), SIMPLENEWS_STATUS_SEND_NOT);
+    drupal_set_message(t('You are now able to resend this newsletter.'));
+  }
+}
+
+/**
+ * Change le status de la newsletter en "Deja envoyé"
+ * https://drupal.org/node/429028#comment-6122162
+ */
+function simplenews_resend_submit_simplenews_form_send_ready($form, &$form_state) {
+  if (user_access('administer simplenews settings')) {
+    simplenews_newsletter_update_sent_status(node_load($form['nid']['#value']), SIMPLENEWS_STATUS_SEND_READY);
+    drupal_set_message(t('This newsletter is marked as sent.'));
+  }
+}
+
+/**
+ * Implements hook_simplenews_sent($node)
+ */
+function simplenews_extras_simplenews_sent($node){
+    $to = variable_get('simplenews_extras_end_to', '');
+    if($to){
+        se_mail($to, 'Envoi terminé : ' . $node->title, 'L\'envoi de la newsletter "'.$node->title.'" est maintenant terminé.');
+    }
+}
+
+/**
+ * Implements hook_menu()
+ * Ajoute une page de config sur la configuration de simplenews pour le mail de fin
+ * d'envoi de newsletter
+ *
+ * Ajout également des pages pour l'inscription à la newsletter
+ */
+function simplenews_extras_menu(){
+
+    $items['admin/config/services/simplenews/settings/extras'] = array(
+        'title' => 'Extras',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('simplenews_extras_settings_form'),
+        'access arguments' => array('administer simplenews settings'),
+        'type' => MENU_LOCAL_TASK,
+    );
+
+    $items['newsletter/subscribe'] = array(
+        'title' => 'Newsletter subscription',
+        'page callback' => 'simplenews_extras_subscribe_page',
+        'access arguments' => array('subscribe to newsletters'),
+        'type' => MENU_LOCAL_TASK,
+    );
+
+    $items['newsletter/subscribe/%'] = array(
+        'title' => 'Newsletter subscription',
+        'page callback' => 'simplenews_extras_subscribe_page',
+        'page arguments' => array(2),
+        'access arguments' => array('subscribe to newsletters'),
+        'type' => MENU_LOCAL_TASK,
+    );
+
+    return $items;
+}
+
+/**
+ * Formulaire de config
+ */
+function simplenews_extras_settings_form($form, $form_state){
+
+    $form['sent_to'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Recipients of end sending mail'),
+        '#default_value' => variable_get('simplenews_extras_end_to', ''),
+    );
+
+    $form['save'] = array(
+        '#type' => 'submit',
+        '#value' => t('Save'),
+    );
+
+    return $form;
+}
+
+function simplenews_extras_settings_form_submit($form, &$form_state){
+    variable_set('simplenews_extras_end_to', $form_state['values']['sent_to']);
+    drupal_set_message(t('Settings saved'));
+}
+
+/**
+ * Implements hook_init()
+ */
+function simplenews_extras_init(){
+}
+
+/**
+ * Implements hook_preprocess_html()
+ */
+function simplenews_extras_preprocess_html(&$variables){
+    if(arg(0) == 'node' && arg(1) && arg(2) == null){
+        $node = node_load(arg(1));
+        $variables['theme_hook_suggestions'][] = 'html__node__' . $node->type;
+    }
+}
+
+/**
+ * Implements hook_preprocess_page()
+ */
+function simplenews_extras_preprocess_page(&$variables){
+    if(isset($variables['node'])){
+        $variables['theme_hook_suggestions'][] = 'page__node__' . $variables['node']->type;
+    }
+}
+
+/**
+ * Implements hook_preprocess_htmlmail()
+ */
+function simplenews_extras_preprocess_htmlmail(&$variables){
+    if(isset($variables['params']) && isset($variables['params']['simplenews_source'])){
+        $source = $variables['params']['simplenews_source'];
+        $variables['theme_hook_suggestions'][] = 'htmlmail__simplenews__' . $source->getNode()->type;
+    }
+}
+
+/**
+ * Implements hook_preprocess_simplenews_newsletter_body()
+ */
+function simplenews_extras_preprocess_simplenews_newsletter_body(&$variables){
+    $variables['theme_hook_suggestions'][] = 'simplenews_newsletter_body__' . str_replace('-', '_', $variables['build']['#node']->type);
+}
+
+/**
+ * Implements hook_preprocess_simplenews_newsletter_footer()
+ */
+function simplenews_extras_preprocess_simplenews_newsletter_footer(&$variables){
+    $variables['theme_hook_suggestions'][] = 'simplenews_newsletter_footer__' . str_replace('-', '_', $variables['build']['#node']->type);
+}
+
+/**
+ * Implements hook_js_alter(&$javascript)
+ */
+function simplenews_extras_js_alter(&$javascript){
+    if(isset($javascript['misc/progress.js'])){
+        $javascript['misc/progress.js']['data'] = drupal_get_path('module', 'simplenews_extras') . '/js/progress.js';
+    }
+}
+
+/**
+ * Implements hook_batch_alter()
+ */
+function simplenews_extras_batch_alter(&$batch){
+}
+
+/**
+ * Page d'inscription
+ */
+function simplenews_extras_subscribe_page($tid = null){
+    if(!$tid) $tid = '0';
+    $block = module_invoke('simplenews', 'block_view', $tid);
+    return $block['content'];
+}

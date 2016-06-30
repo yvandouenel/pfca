@@ -1,0 +1,145 @@
+<?php
+
+/**
+ * Implements hook_schema()
+ */
+function simplenews_stats_schema(){
+
+    // Liste des emails
+    $schema['simplenews_stats_emails'] = array(
+        'fields' => array(
+          'id' => array(
+            'type' => 'varchar',
+            'length' => '13',
+            'not null' => TRUE,
+          ),
+          'email' => array(
+            'type' => 'varchar',
+            'length' => '255',
+            'not null' => TRUE,
+          ),
+        ),
+        'primary key' => array('id'),
+      );
+
+    // Liste des liens
+    $schema['simplenews_stats_links'] = array(
+        'description' => 'TODO: please describe this table!',
+        'fields' => array(
+          'id' => array(
+            'description' => 'TODO: please describe this field!',
+            'type' => 'varchar',
+            'length' => '13',
+            'not null' => TRUE,
+          ),
+          'nid' => array(
+            'description' => 'TODO: please describe this field!',
+            'type' => 'int',
+            'not null' => TRUE,
+          ),
+          'url' => array(
+            'description' => 'TODO: please describe this field!',
+            'type' => 'varchar',
+            'length' => '1024',
+            'not null' => TRUE,
+          ),
+        ),
+        'primary key' => array('id'),
+      );
+
+    // Liste des newsletters
+    $schema['simplenews_stats_nodes'] = array(
+        'description' => 'TODO: please describe this table!',
+        'fields' => array(
+          'id' => array(
+            'description' => 'TODO: please describe this field!',
+            'type' => 'varchar',
+            'length' => '23',
+            'not null' => TRUE,
+          ),
+          'nid' => array(
+            'description' => 'TODO: please describe this field!',
+            'type' => 'int',
+            'not null' => TRUE,
+          ),
+        ),
+        'primary key' => array('id'),
+      );
+
+    // Stats sur les ouvertures
+    $schema['simplenews_stats_open'] = array(
+        'description' => 'TODO: please describe this table!',
+        'fields' => array(
+          'nid' => array(
+            'description' => 'TODO: please describe this field!',
+            'type' => 'int',
+            'not null' => TRUE,
+          ),
+          'email' => array(
+            'description' => 'TODO: please describe this field!',
+            'type' => 'varchar',
+            'length' => '255',
+            'not null' => TRUE,
+          ),
+          'count' => array(
+            'description' => 'TODO: please describe this field!',
+            'type' => 'int',
+            'not null' => TRUE,
+          ),
+        ),
+        'primary key' => array('nid', 'email'),
+      );
+
+    // Stats sur les clics des liens
+    $schema['simplenews_stats_open_link'] = array(
+        'description' => 'TODO: please describe this table!',
+        'fields' => array(
+          'nid' => array(
+            'description' => 'TODO: please describe this field!',
+            'type' => 'int',
+            'not null' => TRUE,
+          ),
+          'link_id' => array(
+            'description' => 'TODO: please describe this field!',
+            'type' => 'varchar',
+            'length' => '13',
+            'not null' => TRUE,
+          ),
+          'email' => array(
+            'description' => 'TODO: please describe this field!',
+            'type' => 'varchar',
+            'length' => '255',
+            'not null' => TRUE,
+          ),
+          'url' => array(
+            'description' => 'TODO: please describe this field!',
+            'type' => 'varchar',
+            'length' => '1024',
+            'not null' => TRUE,
+          ),
+          'count' => array(
+            'description' => 'TODO: please describe this field!',
+            'type' => 'int',
+            'not null' => TRUE,
+          ),
+        ),
+        'primary key' => array('nid', 'link_id', 'email'),
+      );
+
+      // Stats sur les vues
+      $schema['simplenews_stats_view'] = array(
+          'fields' => array(
+            'nid' => array(
+              'type' => 'int',
+              'not null' => TRUE,
+            ),
+            'count' => array(
+              'type' => 'int',
+              'not null' => TRUE,
+            ),
+          ),
+          'primary key' => array('nid'),
+        );
+
+    return $schema;
+}

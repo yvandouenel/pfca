@@ -1,0 +1,4 @@
+name = Simplenews Statistics
+description = Statistics for Simplenews module
+package = Choosit
+core = 7.x

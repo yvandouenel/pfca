@@ -1,0 +1,7 @@
+name = Download file with form
+description = Permet d'afficher un formulaire avant téléchargement d'un fichier
+package = Choosit
+core = 7.x
+version = "7.x-1.0"
+
+;dependencies[] = fancybox
